@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+sqlalchemy
+psycopg2-binary
+python-dotenv
+openai
+llama-index
+qdrant-client
+apache-airflow
+flake8
+
