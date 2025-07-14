@@ -15,3 +15,6 @@ app.add_middleware(
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
+
+# cicd testing
+print("Hello World")
