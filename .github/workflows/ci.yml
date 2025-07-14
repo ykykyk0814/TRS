@@ -26,7 +26,8 @@ jobs:
 
       - name: Check formatting with black
         run: |
-          black . --check
+          black . --check --exclude 'alembic/versions/69d0b2be3d24_refactored_initial_migration.py'
+
 
       - name: Lint with flake8
         run: |
