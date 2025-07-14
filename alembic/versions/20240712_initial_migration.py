@@ -35,7 +35,6 @@ def upgrade() -> None:
     );
 
     -- 创建索引
-    CREATE INDEX ix_users_id ON users (id);
     CREATE INDEX ix_users_email ON users (email);
 
     -- 创建更新时间触发器函数
