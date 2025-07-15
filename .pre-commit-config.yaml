@@ -1,0 +1,51 @@
+repos:
+  # Standard pre-commit hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      # Basic file checks
+      - id: trailing-whitespace
+        exclude: \.md$
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+
+      # Python-specific checks
+      - id: check-ast
+        files: ^app/
+      - id: debug-statements
+        files: ^app/
+
+  # Black code formatter
+  - repo: https://github.com/psf/black
+    rev: 23.12.1
+    hooks:
+      - id: black
+        language_version: python3
+        args: ['--line-length=88']
+        files: ^app/
+
+  # isort import sorter
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: ['--profile=black', '--line-length=88']
+        files: ^app/
+
+  # flake8 linter
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        args: ['--config=.flake8']
+        files: ^app/
+        additional_dependencies:
+          - flake8-bugbear
+
+# Global settings
+default_stages: [pre-commit]
+fail_fast: false
