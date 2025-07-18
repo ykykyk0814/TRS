@@ -10,3 +10,8 @@ pytest
 httpx
 
 pre-commit
+
+fastapi-users
+python-jose
+aiosqlite
+python-dotenv
