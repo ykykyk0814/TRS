@@ -8,7 +8,6 @@ import asyncio
 import os
 import logging
 from app.db import recreate_tables
-from app.models import User  # Import to register the model
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
