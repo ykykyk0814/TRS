@@ -18,13 +18,16 @@ async def test_health_check():
 @pytest.mark.asyncio
 async def test_register():
     async with AsyncClient(app=app, base_url="http://test") as ac:
-        response = await ac.post("/auth/register", json={
-            "email": test_email,
-            "password": test_password,
-            "is_active": True,
-            "is_superuser": False,
-            "is_verified": False
-        })
+        response = await ac.post(
+            "/auth/register",
+            json={
+                "email": test_email,
+                "password": test_password,
+                "is_active": True,
+                "is_superuser": False,
+                "is_verified": False,
+            },
+        )
     # allow 400 if user already exists
     assert response.status_code in [201, 400]
 
@@ -32,10 +35,9 @@ async def test_register():
 @pytest.mark.asyncio
 async def test_login():
     async with AsyncClient(app=app, base_url="http://test") as ac:
-        response = await ac.post("/auth/jwt/login", data={
-            "username": test_email,
-            "password": test_password
-        })
+        response = await ac.post(
+            "/auth/jwt/login", data={"username": test_email, "password": test_password}
+        )
     assert response.status_code == 200
     json_resp = response.json()
     assert "access_token" in json_resp

@@ -28,7 +28,6 @@ jobs:
         run: |
           black . --check --exclude 'alembic/versions/69d0b2be3d24_refactored_initial_migration.py'
 
-
       - name: Lint with flake8
         run: |
           flake8 . --exclude=venv,.git,__pycache__ --max-line-length=100
@@ -36,4 +35,3 @@ jobs:
       - name: Run tests
         run: |
           pytest
-
