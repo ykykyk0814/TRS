@@ -5,8 +5,9 @@ WARNING: This will delete all existing data!
 """
 
 import asyncio
-import os
 import logging
+import os
+
 from app.db import recreate_tables
 
 # Configure logging

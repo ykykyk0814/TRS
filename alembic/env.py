@@ -1,19 +1,20 @@
-from logging.config import fileConfig
-from sqlalchemy import engine_from_config, pool
-from alembic import context
-
 import os
 import sys
+from logging.config import fileConfig
+
 from dotenv import load_dotenv
+from sqlalchemy import engine_from_config, pool
+
+import app.models
+from alembic import context
+# Import your Base metadata
+from app.models import Base
 
 # Add app folder to path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # Load .env
 load_dotenv()
-
-# Import your Base metadata
-from app.db import Base
 
 # Alembic Config object
 config = context.config

@@ -1,7 +1,6 @@
 fastapi
 uvicorn
 alembic
-sqlalchemy
 psycopg2-binary
 
 black
@@ -11,8 +10,14 @@ httpx
 
 pre-commit
 
+sqlalchemy>=2.0.0
+asyncpg>=0.28.0  # For PostgreSQL async support
+aiosqlite>=0.19.0  # For SQLite async support (optional)
+aiomysql>=0.2.0  # For MySQL async support (optional)
+
 fastapi-users
 python-jose
-aiosqlite
 python-dotenv
 fastapi-users-db-sqlalchemy
+
+pytest-asyncio

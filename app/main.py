@@ -12,10 +12,10 @@ from fastapi_users.authentication import (
     JWTStrategy,
 )
 
-from .db import close_engine, create_tables
-from .models import User
-from .schemas import UserCreate, UserRead
-from .user_manager import get_user_manager
+from app.db.session import get_db_session_manager, init_db_session_manager
+from app.models import Base, User
+from app.schemas import UserCreate, UserRead, UserUpdate
+from app.user_manager import get_user_manager
 
 # Load environment variables
 load_dotenv()
@@ -29,6 +29,13 @@ logger = logging.getLogger(__name__)
 # Read settings
 SECRET = os.getenv("SECRET", "fallback-secret")
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*").split(",")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:pass@localhost/mydb")
+ENV = os.getenv("ENV", "development")
+
+if SECRET == "fallback-secret":
+    logger.warning(
+        "Using default SECRET! Set a secure SECRET in your environment for production."
+    )
 
 
 # JWT strategy
@@ -69,12 +76,19 @@ app.add_middleware(
 # Application lifecycle events
 @app.on_event("startup")
 async def startup_event():
-    """Initialize database tables on startup"""
+    """Initialize database session manager & create tables on startup"""
     try:
-        await create_tables()
-        logger.info("Database tables created successfully!")
+        init_db_session_manager(DATABASE_URL, echo=True)
+        db_manager = get_db_session_manager()
+        # Create tables if needed (use Alembic migrations in production)
+        if ENV == "development":
+            Base.metadata.create_all(bind=db_manager.sync_engine)
+            logger.info(
+                "Database tables created (development mode). Use Alembic migrations in production!"
+            )
+        logger.info("Database session initialized successfully!")
     except Exception as e:
-        logger.error(f"Failed to create database tables: {e}")
+        logger.error(f"Failed to initialize database session or create tables: {e}")
         raise
 
 
@@ -82,10 +96,11 @@ async def startup_event():
 async def shutdown_event():
     """Clean up database connections on shutdown"""
     try:
-        await close_engine()
-        logger.info("Database connection closed successfully!")
+        db_manager = get_db_session_manager()
+        await db_manager.dispose()
+        logger.info("Database connections disposed successfully!")
     except Exception as e:
-        logger.error(f"Failed to close database connection: {e}")
+        logger.error(f"Failed to dispose database connections: {e}")
 
 
 # Health check endpoint
@@ -109,7 +124,7 @@ app.include_router(
 )
 
 app.include_router(
-    fastapi_users.get_users_router(UserRead, UserCreate),
+    fastapi_users.get_users_router(UserRead, UserUpdate),
     prefix="/users",
     tags=["users"],
 )

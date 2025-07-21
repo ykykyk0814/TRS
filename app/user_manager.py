@@ -6,7 +6,7 @@ from fastapi_users import BaseUserManager, UUIDIDMixin
 from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .db import get_async_session
+from .db.session import get_async_session
 from .models import User
 
 SECRET = "your-super-secret-key"
@@ -25,5 +25,6 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID]):
 
 
 async def get_user_manager():
-    async for user_db in get_user_db(await get_async_session()):
-        yield UserManager(user_db)
+    async with get_async_session() as session:
+        async for user_db in get_user_db(session):
+            yield UserManager(user_db)
