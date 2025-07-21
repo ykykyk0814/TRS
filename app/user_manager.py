@@ -27,5 +27,5 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, UUID]):
 
 
 async def get_user_manager():
-    async for user_db in get_user_db(await get_async_session()):
+    async for user_db in get_user_db(get_async_session()):
         yield UserManager(user_db)
