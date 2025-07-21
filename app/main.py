@@ -66,28 +66,7 @@ app.add_middleware(
 )
 
 
-# Application lifecycle events
-@app.on_event("startup")
-async def startup_event():
-    """Initialize database tables on startup"""
-    try:
-        await create_tables()
-        logger.info("Database tables created successfully!")
-    except Exception as e:
-        logger.error(f"Failed to create database tables: {e}")
-        raise
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Clean up database connections on shutdown"""
-    try:
-        await close_engine()
-        logger.info("Database connection closed successfully!")
-    except Exception as e:
-        logger.error(f"Failed to close database connection: {e}")
-
-
+# Application lifecycle events are now managed by the lifespan context manager.
 # Health check endpoint
 @app.get("/health")
 async def health_check():
