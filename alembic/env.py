@@ -5,8 +5,8 @@ from logging.config import fileConfig
 from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
 
-import app.models
 from alembic import context
+
 # Import your Base metadata
 from app.models import Base
 

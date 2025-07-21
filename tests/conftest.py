@@ -1,13 +1,12 @@
 # tests/conftest.py
-import pytest
 import pytest_asyncio
-from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
-                                    create_async_engine)
-
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from app.db import Base
-from app.models import Preference, Ticket, User
 
-DATABASE_URL = "postgresql+asyncpg://postgres:password@localhost:5432/travel_recommendation"
+DATABASE_URL = (
+    "postgresql+asyncpg://postgres:password@localhost:5432/travel_recommendation"
+)
+
 
 @pytest_asyncio.fixture()
 async def db_test_session():
