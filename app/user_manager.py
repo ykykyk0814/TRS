@@ -9,9 +9,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .db import get_async_session
 from .models import User
 
-SECRET = "your-super-secret-key"
+import os
 
-
+SECRET = os.getenv("SECRET_KEY")
+if not SECRET:
+    raise ValueError("SECRET_KEY environment variable is not set.")
 async def get_user_db(session: AsyncSession):
     yield SQLAlchemyUserDatabase(session, User)
 
