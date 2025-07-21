@@ -18,10 +18,7 @@ jobs:
           POSTGRES_PASSWORD: password
           POSTGRES_DB: travel_recommendation
         options: >-
-          --health-cmd "pg_isready -U postgres" \
-          --health-interval 10s \
-          --health-timeout 5s \
-          --health-retries 5
+          --health-cmd="pg_isready -U postgres" --health-interval=10s --health-timeout=5s --health-retries=5
     env:
       DATABASE_URL: postgresql+asyncpg://postgres:password@localhost:5432/travel_recommendation
     steps:
