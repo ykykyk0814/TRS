@@ -15,8 +15,10 @@ down_revision = "69d0b2be3d24"
 branch_labels = None
 depends_on = None
 
+
 def upgrade():
-    op.add_column('users', sa.Column('full_name', sa.String(), nullable=True))
+    op.add_column("users", sa.Column("full_name", sa.String(), nullable=True))
+
 
 def downgrade():
-    op.drop_column('users', 'full_name')
+    op.drop_column("users", "full_name")
