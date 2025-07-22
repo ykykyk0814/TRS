@@ -1,6 +1,7 @@
 version: '3.8'
 
 services:
+  # Main Application Database
   db:
     image: postgres:latest
     volumes:
@@ -11,7 +12,13 @@ services:
       POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
 
+  # Vector Database
   qdrant:
     image: qdrant/qdrant:latest
     volumes:
@@ -19,125 +26,6 @@ services:
     ports:
       - "6333:6333"
       - "6334:6334"
-
-  airflow-webserver:
-    image: apache/airflow:3.0.3
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      airflow-init:
-        condition: service_completed_successfully
-    environment:
-      AIRFLOW__CORE__EXECUTOR: CeleryExecutor
-      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:postgres@db:5432/travel_recommendation
-      AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
-      AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://postgres:postgres@db:5432/travel_recommendation
-      AIRFLOW__CORE__FERNET_KEY: "wE08rQJg1tDyK2Xrih915LaqSf4J1PxU0_oNlr-VwZw="
-      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
-      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
-      _AIRFLOW_WWW_USER_USERNAME: airflow
-      _AIRFLOW_WWW_USER_PASSWORD: airflow
-    volumes:
-      - ./airflow/dags:/opt/airflow/dags
-      - ./airflow/logs:/opt/airflow/logs
-      - ./airflow/plugins:/opt/airflow/plugins
-    ports:
-      - "8080:8080"
-    command: api-server
-
-  airflow-scheduler:
-    image: apache/airflow:3.0.3
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      airflow-init:
-        condition: service_completed_successfully
-    environment:
-      AIRFLOW__CORE__EXECUTOR: CeleryExecutor
-      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:postgres@db:5432/travel_recommendation
-      AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
-      AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://postgres:postgres@db:5432/travel_recommendation
-      AIRFLOW__CORE__FERNET_KEY: "wE08rQJg1tDyK2Xrih915LaqSf4J1PxU0_oNlr-VwZw="
-      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
-      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
-    volumes:
-      - ./airflow/dags:/opt/airflow/dags
-      - ./airflow/logs:/opt/airflow/logs
-      - ./airflow/plugins:/opt/airflow/plugins
-    command: scheduler
-
-  airflow-worker:
-    image: apache/airflow:3.0.3
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      airflow-init:
-        condition: service_completed_successfully
-    environment:
-      AIRFLOW__CORE__EXECUTOR: CeleryExecutor
-      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:postgres@db:5432/travel_recommendation
-      AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
-      AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://postgres:postgres@db:5432/travel_recommendation
-      AIRFLOW__CORE__FERNET_KEY: "wE08rQJg1tDyK2Xrih915LaqSf4J1PxU0_oNlr-VwZw="
-      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
-      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
-    volumes:
-      - ./airflow/dags:/opt/airflow/dags
-      - ./airflow/logs:/opt/airflow/logs
-      - ./airflow/plugins:/opt/airflow/plugins
-    command: celery worker
-
-  airflow-init:
-    image: apache/airflow:3.0.3
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      airflow-init:
-        condition: service_completed_successfully
-    environment:
-      AIRFLOW__CORE__EXECUTOR: CeleryExecutor
-      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:postgres@db:5432/travel_recommendation
-      AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
-      AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://postgres:postgres@db:5432/travel_recommendation
-      AIRFLOW__CORE__FERNET_KEY: "wE08rQJg1tDyK2Xrih915LaqSf4J1PxU0_oNlr-VwZw="
-      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
-      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
-      _AIRFLOW_WWW_USER_USERNAME: airflow
-      _AIRFLOW_WWW_USER_PASSWORD: airflow
-    volumes:
-      - ./airflow/dags:/opt/airflow/dags
-      - ./airflow/logs:/opt/airflow/logs
-      - ./airflow/plugins:/opt/airflow/plugins
-    entrypoint: ["/bin/bash", "-c"]
-    command:
-      - |
-        exec airflow db migrate && \
-        exec airflow users create \
-          --username "$${_AIRFLOW_WWW_USER_USERNAME}" \
-          --password "$${_AIRFLOW_WWW_USER_PASSWORD}" \
-          --firstname Firstname \
-          --lastname Lastname \
-          --role Admin \
-          --email admin@example.com
-
-  redis:
-    image: redis:latest
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
 
 volumes:
   pg_data:
