@@ -159,6 +159,7 @@ def init_db_session_manager(
     Returns:
         UnifiedDatabaseSession instance
     """
+    global _db_session_manager
     _db_session_manager = UnifiedDatabaseSession(database_url, echo)
     return _db_session_manager
 

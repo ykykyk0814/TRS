@@ -5,7 +5,7 @@ import pytest
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 
-from app.models import Preference, Ticket, User
+from app.core.models import Preference, Ticket, User
 
 
 @pytest.mark.asyncio

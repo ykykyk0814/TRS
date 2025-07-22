@@ -1,21 +1,13 @@
 import logging
 import os
-import uuid
 
+from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi_users import FastAPIUsers
-from fastapi_users.authentication import (
-    AuthenticationBackend,
-    CookieTransport,
-    JWTStrategy,
-)
 
 from app.db.session import get_db_session_manager, init_db_session_manager
-from app.models import Base, User
-from app.schemas import UserCreate, UserRead, UserUpdate
-from app.user_manager import get_user_manager
+from app.api import api_router
 
 # Load environment variables
 load_dotenv()
@@ -27,40 +19,37 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Read settings
-SECRET = os.getenv("SECRET", "fallback-secret")
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*").split(",")
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:pass@localhost/mydb")
 ENV = os.getenv("ENV", "development")
 
-if SECRET == "fallback-secret":
-    logger.warning(
-        "Using default SECRET! Set a secure SECRET in your environment for production."
-    )
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan context manager for startup and shutdown logic"""
+    try:
+        init_db_session_manager(DATABASE_URL, echo=True)
+        logger.info("Database session initialized successfully!")
+        logger.info("Use 'alembic upgrade head' to apply database migrations.")
+        yield
+    except Exception as e:
+        logger.error(f"Failed to initialize database session: {e}")
+        raise
+    finally:
+        try:
+            db_manager = get_db_session_manager()
+            await db_manager.dispose()
+            logger.info("Database connections disposed successfully!")
+        except Exception as e:
+            logger.error(f"Failed to dispose database connections: {e}")
 
-# JWT strategy
-def get_jwt_strategy() -> JWTStrategy:
-    return JWTStrategy(secret=SECRET, lifetime_seconds=3600)
-
-
-cookie_transport = CookieTransport(cookie_name="auth", cookie_max_age=3600)
-
-auth_backend = AuthenticationBackend(
-    name="jwt",
-    transport=cookie_transport,
-    get_strategy=get_jwt_strategy,
-)
-
-fastapi_users = FastAPIUsers[User, uuid.UUID](
-    get_user_manager,
-    [auth_backend],
-)
 
 # Initialize FastAPI app
 app = FastAPI(
     title="Travel Recommendation API",
     description="Authentication & User Management with FastAPI-Users.",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 # CORS
@@ -72,59 +61,5 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-# Application lifecycle events
-@app.on_event("startup")
-async def startup_event():
-    """Initialize database session manager & create tables on startup"""
-    try:
-        init_db_session_manager(DATABASE_URL, echo=True)
-        db_manager = get_db_session_manager()
-        # Create tables if needed (use Alembic migrations in production)
-        if ENV == "development":
-            Base.metadata.create_all(bind=db_manager.sync_engine)
-            logger.info(
-                "Database tables created (development mode). Use Alembic migrations in production!"
-            )
-        logger.info("Database session initialized successfully!")
-    except Exception as e:
-        logger.error(f"Failed to initialize database session or create tables: {e}")
-        raise
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Clean up database connections on shutdown"""
-    try:
-        db_manager = get_db_session_manager()
-        await db_manager.dispose()
-        logger.info("Database connections disposed successfully!")
-    except Exception as e:
-        logger.error(f"Failed to dispose database connections: {e}")
-
-
-# Health check endpoint
-@app.get("/health")
-async def health_check():
-    logger.info("Health check called")
-    return {"status": "ok"}
-
-
-# Include routers
-app.include_router(
-    fastapi_users.get_auth_router(auth_backend),
-    prefix="/auth/jwt",
-    tags=["auth"],
-)
-
-app.include_router(
-    fastapi_users.get_register_router(UserRead, UserCreate),
-    prefix="/auth",
-    tags=["auth"],
-)
-
-app.include_router(
-    fastapi_users.get_users_router(UserRead, UserUpdate),
-    prefix="/users",
-    tags=["users"],
-)
+# Include API router
+app.include_router(api_router, prefix="/api")

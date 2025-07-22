@@ -1,15 +1,16 @@
 # app/user_manager.py
 
+import os
 from uuid import UUID
 
 from fastapi_users import BaseUserManager, UUIDIDMixin
 from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .db.session import get_async_session
-from .models import User
+from app.db.session import get_async_session
+from app.core.models import User
 
-SECRET = "your-super-secret-key"
+SECRET = os.getenv("SECRET", "fallback-secret")
 
 
 async def get_user_db(session: AsyncSession):

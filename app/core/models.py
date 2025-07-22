@@ -8,7 +8,7 @@ from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTableUUID
 from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .db import Base
+from app.db import Base
 
 
 class User(SQLAlchemyBaseUserTableUUID, Base):
