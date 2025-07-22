@@ -3,6 +3,7 @@ import sys
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config, pool
+
 from alembic import context
 
 # Add the project root to the Python path
@@ -27,7 +28,9 @@ database_url = os.environ.get("DATABASE_URL")
 if database_url:
     # Convert async URL to sync for Alembic if needed
     if database_url.startswith("postgresql+asyncpg://"):
-        database_url = database_url.replace("postgresql+asyncpg://", "postgresql+psycopg2://")
+        database_url = database_url.replace(
+            "postgresql+asyncpg://", "postgresql+psycopg2://"
+        )
     elif database_url.startswith("sqlite+aiosqlite://"):
         database_url = database_url.replace("sqlite+aiosqlite://", "sqlite://")
 

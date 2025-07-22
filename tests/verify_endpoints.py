@@ -1,7 +1,7 @@
 # This script is NOT a pytest test file. It is for manual/CI verification only.
 # pytest: skip-file
 
-#!/usr/bin/env python3
+# !/usr/bin/env python3
 """
 Endpoint verification script for Travel Recommendation System API.
 
@@ -15,13 +15,12 @@ Usage:
     python tests/verify_endpoints.py [--base-url http://localhost:8000]
 """
 
-import asyncio
 import argparse
-import json
+import asyncio
 import sys
-from datetime import datetime, timedelta
-from typing import Dict, Any, Optional
 import uuid
+from datetime import datetime, timedelta
+from typing import Dict, Optional
 
 import httpx
 
@@ -53,7 +52,9 @@ class APIVerifier:
             headers["Authorization"] = f"Bearer {self.auth_token}"
         return headers
 
-    async def _make_request(self, method: str, endpoint: str, **kwargs) -> httpx.Response:
+    async def _make_request(
+        self, method: str, endpoint: str, **kwargs
+    ) -> httpx.Response:
         """Make HTTP request with proper error handling."""
         url = f"{self.api_base}{endpoint}"
         try:
@@ -78,7 +79,9 @@ class APIVerifier:
             # Test health endpoint
             response = await self._make_request("GET", "/health")
             health_ok = response.status_code == 200
-            self._print_result("Health check", health_ok, f"Status: {response.status_code}")
+            self._print_result(
+                "Health check", health_ok, f"Status: {response.status_code}"
+            )
 
             # Test info endpoint
             response = await self._make_request("GET", "/info")
@@ -98,23 +101,29 @@ class APIVerifier:
             user_data = {
                 "email": self.test_email,
                 "password": self.test_password,
-                "full_name": "Test User"
+                "full_name": "Test User",
             }
 
             response = await self._make_request(
                 "POST",
                 "/auth/register",
                 headers={"Content-Type": "application/json"},
-                json=user_data
+                json=user_data,
             )
 
             success = response.status_code == 201
             if success:
                 user_info = response.json()
                 self.test_user_id = user_info.get("id")
-                self._print_result("User registration", True, f"User ID: {self.test_user_id}")
+                self._print_result(
+                    "User registration", True, f"User ID: {self.test_user_id}"
+                )
             else:
-                self._print_result("User registration", False, f"Status: {response.status_code}, Body: {response.text}")
+                self._print_result(
+                    "User registration",
+                    False,
+                    f"Status: {response.status_code}, Body: {response.text}",
+                )
 
             return success
         except Exception as e:
@@ -129,14 +138,14 @@ class APIVerifier:
             # Login to get JWT token
             login_data = {
                 "username": self.test_email,  # FastAPI-Users uses 'username' field for email
-                "password": self.test_password
+                "password": self.test_password,
             }
 
             response = await self._make_request(
                 "POST",
                 "/auth/jwt/login",
                 headers={"Content-Type": "application/x-www-form-urlencoded"},
-                data=login_data
+                data=login_data,
             )
 
             if response.status_code in [200, 204]:
@@ -145,7 +154,9 @@ class APIVerifier:
                     # Cookie-based auth
                     self.auth_token = None  # Will use cookies
                     self.client.cookies = response.cookies
-                    self._print_result("JWT Authentication", True, "Using cookie-based auth")
+                    self._print_result(
+                        "JWT Authentication", True, "Using cookie-based auth"
+                    )
                     return True
                 elif response.status_code == 200:
                     # Try to get token from response body
@@ -153,22 +164,36 @@ class APIVerifier:
                         token_data = response.json()
                         self.auth_token = token_data.get("access_token")
                         if self.auth_token:
-                            self._print_result("JWT Authentication", True, "Using bearer token auth")
+                            self._print_result(
+                                "JWT Authentication", True, "Using bearer token auth"
+                            )
                             return True
                         else:
-                            self._print_result("JWT Authentication", False, "No token in response")
+                            self._print_result(
+                                "JWT Authentication", False, "No token in response"
+                            )
                             return False
-                    except:
-                        self._print_result("JWT Authentication", False, "Could not parse token response")
+                    except Exception:
+                        self._print_result(
+                            "JWT Authentication",
+                            False,
+                            "Could not parse token response",
+                        )
                         return False
                 elif response.status_code == 204:
                     # 204 with no cookies means something went wrong
-                    self._print_result("JWT Authentication", False, "Got 204 but no auth cookie found")
+                    self._print_result(
+                        "JWT Authentication", False, "Got 204 but no auth cookie found"
+                    )
                     return False
 
                 return True
             else:
-                self._print_result("JWT Authentication", False, f"Status: {response.status_code}, Body: {response.text}")
+                self._print_result(
+                    "JWT Authentication",
+                    False,
+                    f"Status: {response.status_code}, Body: {response.text}",
+                )
                 return False
 
         except Exception as e:
@@ -181,17 +206,19 @@ class APIVerifier:
 
         try:
             response = await self._make_request(
-                "GET",
-                "/auth/users/me",
-                headers=self._get_auth_headers()
+                "GET", "/auth/users/me", headers=self._get_auth_headers()
             )
 
             success = response.status_code == 200
             if success:
                 user_data = response.json()
-                self._print_result("Get current user profile", True, f"Email: {user_data.get('email')}")
+                self._print_result(
+                    "Get current user profile", True, f"Email: {user_data.get('email')}"
+                )
             else:
-                self._print_result("Get current user profile", False, f"Status: {response.status_code}")
+                self._print_result(
+                    "Get current user profile", False, f"Status: {response.status_code}"
+                )
 
             return success
         except Exception as e:
@@ -208,23 +235,29 @@ class APIVerifier:
             preference_data = {
                 "user_id": self.test_user_id,
                 "prefers_email": True,
-                "prefers_sms": False
+                "prefers_sms": False,
             }
 
             response = await self._make_request(
                 "POST",
                 "/preferences/",
                 headers=self._get_auth_headers(),
-                json=preference_data
+                json=preference_data,
             )
 
             create_success = response.status_code == 200
             if create_success:
                 pref_data = response.json()
                 self.test_preference_id = pref_data.get("id")
-                self._print_result("Create preference", True, f"Preference ID: {self.test_preference_id}")
+                self._print_result(
+                    "Create preference",
+                    True,
+                    f"Preference ID: {self.test_preference_id}",
+                )
             else:
-                self._print_result("Create preference", False, f"Status: {response.status_code}")
+                self._print_result(
+                    "Create preference", False, f"Status: {response.status_code}"
+                )
             results.append(create_success)
 
             if create_success:
@@ -232,10 +265,12 @@ class APIVerifier:
                 response = await self._make_request(
                     "GET",
                     f"/preferences/{self.test_preference_id}",
-                    headers=self._get_auth_headers()
+                    headers=self._get_auth_headers(),
                 )
                 get_success = response.status_code == 200
-                self._print_result("Get preference", get_success, f"Status: {response.status_code}")
+                self._print_result(
+                    "Get preference", get_success, f"Status: {response.status_code}"
+                )
                 results.append(get_success)
 
                 # Update preference
@@ -244,10 +279,14 @@ class APIVerifier:
                     "PUT",
                     f"/preferences/{self.test_preference_id}",
                     headers=self._get_auth_headers(),
-                    json=update_data
+                    json=update_data,
                 )
                 update_success = response.status_code == 200
-                self._print_result("Update preference", update_success, f"Status: {response.status_code}")
+                self._print_result(
+                    "Update preference",
+                    update_success,
+                    f"Status: {response.status_code}",
+                )
                 results.append(update_success)
 
             return all(results)
@@ -267,25 +306,28 @@ class APIVerifier:
                 "origin": "New York",
                 "destination": "Los Angeles",
                 "departure_time": (datetime.now() + timedelta(days=30)).isoformat(),
-                "arrival_time": (datetime.now() + timedelta(days=30, hours=5)).isoformat(),
+                "arrival_time": (
+                    datetime.now() + timedelta(days=30, hours=5)
+                ).isoformat(),
                 "seat_number": "12A",
-                "notes": "Test ticket"
+                "notes": "Test ticket",
             }
 
             response = await self._make_request(
-                "POST",
-                "/tickets/",
-                headers=self._get_auth_headers(),
-                json=ticket_data
+                "POST", "/tickets/", headers=self._get_auth_headers(), json=ticket_data
             )
 
             create_success = response.status_code == 200
             if create_success:
                 ticket_resp = response.json()
                 self.test_ticket_id = ticket_resp.get("id")
-                self._print_result("Create ticket", True, f"Ticket ID: {self.test_ticket_id}")
+                self._print_result(
+                    "Create ticket", True, f"Ticket ID: {self.test_ticket_id}"
+                )
             else:
-                self._print_result("Create ticket", False, f"Status: {response.status_code}")
+                self._print_result(
+                    "Create ticket", False, f"Status: {response.status_code}"
+                )
             results.append(create_success)
 
             if create_success:
@@ -293,20 +335,22 @@ class APIVerifier:
                 response = await self._make_request(
                     "GET",
                     f"/tickets/{self.test_ticket_id}",
-                    headers=self._get_auth_headers()
+                    headers=self._get_auth_headers(),
                 )
                 get_success = response.status_code == 200
-                self._print_result("Get ticket", get_success, f"Status: {response.status_code}")
+                self._print_result(
+                    "Get ticket", get_success, f"Status: {response.status_code}"
+                )
                 results.append(get_success)
 
                 # Get all tickets
                 response = await self._make_request(
-                    "GET",
-                    "/tickets/",
-                    headers=self._get_auth_headers()
+                    "GET", "/tickets/", headers=self._get_auth_headers()
                 )
                 list_success = response.status_code == 200
-                self._print_result("List tickets", list_success, f"Status: {response.status_code}")
+                self._print_result(
+                    "List tickets", list_success, f"Status: {response.status_code}"
+                )
                 results.append(list_success)
 
                 # Update ticket
@@ -315,10 +359,12 @@ class APIVerifier:
                     "PUT",
                     f"/tickets/{self.test_ticket_id}",
                     headers=self._get_auth_headers(),
-                    json=update_data
+                    json=update_data,
                 )
                 update_success = response.status_code == 200
-                self._print_result("Update ticket", update_success, f"Status: {response.status_code}")
+                self._print_result(
+                    "Update ticket", update_success, f"Status: {response.status_code}"
+                )
                 results.append(update_success)
 
             return all(results)
@@ -337,10 +383,14 @@ class APIVerifier:
                 response = await self._make_request(
                     "DELETE",
                     f"/tickets/{self.test_ticket_id}",
-                    headers=self._get_auth_headers()
+                    headers=self._get_auth_headers(),
                 )
                 ticket_cleanup = response.status_code == 200
-                self._print_result("Delete test ticket", ticket_cleanup, f"Status: {response.status_code}")
+                self._print_result(
+                    "Delete test ticket",
+                    ticket_cleanup,
+                    f"Status: {response.status_code}",
+                )
                 results.append(ticket_cleanup)
 
             # Delete preference
@@ -348,10 +398,14 @@ class APIVerifier:
                 response = await self._make_request(
                     "DELETE",
                     f"/preferences/{self.test_preference_id}",
-                    headers=self._get_auth_headers()
+                    headers=self._get_auth_headers(),
                 )
                 pref_cleanup = response.status_code == 200
-                self._print_result("Delete test preference", pref_cleanup, f"Status: {response.status_code}")
+                self._print_result(
+                    "Delete test preference",
+                    pref_cleanup,
+                    f"Status: {response.status_code}",
+                )
                 results.append(pref_cleanup)
 
             # Note: We don't delete the user as FastAPI-Users doesn't provide a delete endpoint by default
@@ -392,7 +446,7 @@ class APIVerifier:
         await self.cleanup_test_data()
 
         # Summary
-        print(f"\n📊 Verification Summary:")
+        print("\n📊 Verification Summary:")
         print(f"   Total tests: {len(tests)}")
         print(f"   Passed: {sum(results)}")
         print(f"   Failed: {len(results) - sum(results)}")
@@ -405,8 +459,12 @@ class APIVerifier:
 
 
 async def main():
-    parser = argparse.ArgumentParser(description="Verify Travel Recommendation System API endpoints")
-    parser.add_argument("--base-url", default="http://localhost:8000", help="Base URL of the API")
+    parser = argparse.ArgumentParser(
+        description="Verify Travel Recommendation System API endpoints"
+    )
+    parser.add_argument(
+        "--base-url", default="http://localhost:8000", help="Base URL of the API"
+    )
     args = parser.parse_args()
 
     async with APIVerifier(args.base_url) as verifier:
