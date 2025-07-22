@@ -51,4 +51,6 @@ This project aims to provide travellers personalized travel plans with FastAPI U
 
 ## Contributing
 
-- **Code style:** Use `
+- **Code style:** Use `black` for formatting and `flake8` for linting
+- **Testing:** Write tests for new features
+- **Database:** Use Alembic for database migrations
