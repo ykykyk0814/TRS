@@ -1,11 +1,15 @@
 # tests/conftest.py
+import os
+
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from app.db import Base
 
-DATABASE_URL = (
-    "postgresql+asyncpg://postgres:postgres@localhost:5432/travel_recommendation"
+# Use environment variable with fallback for tests
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql+asyncpg://postgres:postgres@localhost:5432/travel_recommendation",
 )
 
 

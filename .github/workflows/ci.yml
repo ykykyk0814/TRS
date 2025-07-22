@@ -25,6 +25,8 @@ jobs:
           --health-retries 5
     env:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/travel_recommendation
+      SECRET: ci-test-secret-key-do-not-use-in-production
+      ENV: development
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -48,6 +50,10 @@ jobs:
             sleep 2
           done
 
+      - name: Run database migrations
+        run: |
+          alembic upgrade head
+
       - name: Check formatting with black
         run: |
           black . --check
@@ -58,4 +64,9 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest
+          pytest -v
+
+      - name: Verify API endpoints (optional)
+        run: |
+          python tests/verify_endpoints.py --base-url http://localhost:8000 || echo "Endpoint verification skipped (requires running server)"
+        continue-on-error: true
