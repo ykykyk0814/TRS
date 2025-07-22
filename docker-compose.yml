@@ -1,6 +1,7 @@
 version: '3.8'
 
 services:
+  # Main Application Database
   db:
     image: postgres:latest
     volumes:
@@ -11,7 +12,13 @@ services:
       POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
 
+  # Vector Database
   qdrant:
     image: qdrant/qdrant:latest
     volumes:
@@ -19,8 +26,6 @@ services:
     ports:
       - "6333:6333"
       - "6334:6334"
-
-
 
 volumes:
   pg_data:

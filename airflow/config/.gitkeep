@@ -1,0 +1,2 @@
+# This file ensures the config directory is tracked by Git
+# Airflow configuration files will be stored in this directory
