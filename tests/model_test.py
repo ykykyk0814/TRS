@@ -45,8 +45,8 @@ async def test_user_ticket(db_test_session):
         user_id=user.id,
         origin="NYC",
         destination="LAX",
-        departure_time=datetime.utcnow(),
-        arrival_time=datetime.utcnow(),
+        departure_time=datetime.now(),
+        arrival_time=datetime.now(),
     )
     db_test_session.add(ticket)
     await db_test_session.commit()

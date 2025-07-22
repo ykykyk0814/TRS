@@ -16,7 +16,7 @@ jobs:
           - 5432:5432
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
+          POSTGRES_PASSWORD: postgres
           POSTGRES_DB: travel_recommendation
         options: >-
           --health-cmd pg_isready
@@ -24,7 +24,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     env:
-      DATABASE_URL: postgresql+asyncpg://postgres:password@localhost:5432/travel_recommendation
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/travel_recommendation
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

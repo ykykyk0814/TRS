@@ -1,10 +1,11 @@
 # tests/conftest.py
 import pytest_asyncio
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+
 from app.db import Base
 
 DATABASE_URL = (
-    "postgresql+asyncpg://postgres:password@localhost:5432/travel_recommendation"
+    "postgresql+asyncpg://postgres:postgres@localhost:5432/travel_recommendation"
 )
 
 

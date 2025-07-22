@@ -1,7 +1,7 @@
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class PreferenceRequestDTO(BaseModel):
@@ -15,18 +15,19 @@ class PreferenceRequestDTO(BaseModel):
         False, description="Whether user prefers SMS notifications"
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "user_id": "123e4567-e89b-12d3-a456-426614174000",
                 "prefers_email": True,
                 "prefers_sms": False,
             }
         }
+    )
 
 
 class PreferenceUpdateDTO(BaseModel):
-    """Request DTO for updating preferences (all fields optional except user constraints)."""
+    """Request DTO for updating preferences (all fields optional)."""
 
     prefers_email: Optional[bool] = Field(
         None, description="Whether user prefers email notifications"
@@ -35,8 +36,9 @@ class PreferenceUpdateDTO(BaseModel):
         None, description="Whether user prefers SMS notifications"
     )
 
-    class Config:
-        json_schema_extra = {"example": {"prefers_email": False, "prefers_sms": True}}
+    model_config = ConfigDict(
+        json_schema_extra={"example": {"prefers_email": False, "prefers_sms": True}}
+    )
 
 
 class PreferenceResponseDTO(BaseModel):
@@ -49,13 +51,14 @@ class PreferenceResponseDTO(BaseModel):
     )
     prefers_sms: bool = Field(..., description="Whether user prefers SMS notifications")
 
-    class Config:
-        from_attributes = True
-        json_schema_extra = {
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
             "example": {
                 "id": 1,
                 "user_id": "123e4567-e89b-12d3-a456-426614174000",
                 "prefers_email": True,
                 "prefers_sms": False,
             }
-        }
+        },
+    )

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class SuccessResponseDTO(BaseModel):
@@ -6,8 +6,9 @@ class SuccessResponseDTO(BaseModel):
 
     message: str = Field(..., description="Success message")
 
-    class Config:
-        json_schema_extra = {"example": {"message": "Operation completed successfully"}}
+    model_config = ConfigDict(
+        json_schema_extra={"example": {"message": "Operation completed successfully"}}
+    )
 
 
 class PaginationQueryDTO(BaseModel):
@@ -18,5 +19,4 @@ class PaginationQueryDTO(BaseModel):
         100, ge=1, le=1000, description="Maximum number of items to return"
     )
 
-    class Config:
-        json_schema_extra = {"example": {"skip": 0, "limit": 100}}
+    model_config = ConfigDict(json_schema_extra={"example": {"skip": 0, "limit": 100}})

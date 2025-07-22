@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class TicketRequestDTO(BaseModel):
@@ -20,8 +20,8 @@ class TicketRequestDTO(BaseModel):
     seat_number: Optional[str] = Field(None, max_length=10, description="Seat number")
     notes: Optional[str] = Field(None, description="Additional notes")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "user_id": "123e4567-e89b-12d3-a456-426614174000",
                 "origin": "New York",
@@ -32,6 +32,7 @@ class TicketRequestDTO(BaseModel):
                 "notes": "Window seat requested",
             }
         }
+    )
 
 
 class TicketUpdateDTO(BaseModel):
@@ -50,10 +51,11 @@ class TicketUpdateDTO(BaseModel):
     seat_number: Optional[str] = Field(None, max_length=10, description="Seat number")
     notes: Optional[str] = Field(None, description="Additional notes")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {"seat_number": "15B", "notes": "Changed to aisle seat"}
         }
+    )
 
 
 class TicketResponseDTO(BaseModel):
@@ -68,9 +70,9 @@ class TicketResponseDTO(BaseModel):
     seat_number: Optional[str] = Field(None, description="Seat number")
     notes: Optional[str] = Field(None, description="Additional notes")
 
-    class Config:
-        from_attributes = True
-        json_schema_extra = {
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
             "example": {
                 "id": 1,
                 "user_id": "123e4567-e89b-12d3-a456-426614174000",
@@ -81,4 +83,5 @@ class TicketResponseDTO(BaseModel):
                 "seat_number": "12A",
                 "notes": "Window seat requested",
             }
-        }
+        },
+    )
