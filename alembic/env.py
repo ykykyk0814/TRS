@@ -30,7 +30,7 @@ if database_url:
         database_url = database_url.replace("postgresql+asyncpg://", "postgresql+psycopg2://")
     elif database_url.startswith("sqlite+aiosqlite://"):
         database_url = database_url.replace("sqlite+aiosqlite://", "sqlite://")
-    
+
     config.set_main_option("sqlalchemy.url", database_url)
 
 

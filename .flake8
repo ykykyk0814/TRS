@@ -8,7 +8,9 @@ extend-ignore =
     # E501: line too long (handled by black)
     E501,
     # E402: module level import not at top of file (sometimes needed)
-    E402
+    E402,
+    # B008: FastAPI dependency injection pattern (Depends() in defaults)
+    B008
 exclude =
     .git,
     __pycache__,

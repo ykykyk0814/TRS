@@ -1,7 +1,7 @@
 """Initial FastAPI Users schema
 
 Revision ID: 7cf5a6f8138f
-Revises: 
+Revises:
 Create Date: 2025-07-22 10:55:55.319300
 
 """

@@ -1,16 +1,17 @@
-name: Lint, Format, and Test
+name: CI
 
 on:
   push:
-    branches: [main, alembic]
+    branches: [main]
   pull_request:
+    branches: [main]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:15
+        image: postgres:16
         ports:
           - 5432:5432
         env:
@@ -18,17 +19,21 @@ jobs:
           POSTGRES_PASSWORD: password
           POSTGRES_DB: travel_recommendation
         options: >-
-          --health-cmd="pg_isready -U postgres" --health-interval=10s --health-timeout=5s --health-retries=5
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
       DATABASE_URL: postgresql+asyncpg://postgres:password@localhost:5432/travel_recommendation
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.12"
+          cache: 'pip'
 
       - name: Install dependencies
         run: |
@@ -45,11 +50,11 @@ jobs:
 
       - name: Check formatting with black
         run: |
-          black . --check --exclude 'alembic/versions/69d0b2be3d24_refactored_initial_migration.py'
+          black . --check
 
       - name: Lint with flake8
         run: |
-          flake8 . --exclude=venv,.git,__pycache__ --max-line-length=100
+          flake8 .
 
       - name: Run tests
         run: |

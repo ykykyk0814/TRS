@@ -1,8 +1,8 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
 from uuid import UUID
 
-from sqlalchemy import select, update, delete
+from sqlalchemy import select
 from sqlalchemy.orm import DeclarativeBase
 
 from app.db.session import get_db_session_manager
@@ -14,7 +14,7 @@ UpdateSchemaType = TypeVar("UpdateSchemaType")
 
 class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType], ABC):
     """Base repository class with common CRUD operations."""
-    
+
     def __init__(self, model: Type[ModelType]):
         self.model = model
         self._db_manager = None
@@ -52,9 +52,9 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType], ABC
             if isinstance(obj_in, dict):
                 db_obj = self.model(**obj_in)
             else:
-                obj_data = obj_in.dict() if hasattr(obj_in, 'dict') else obj_in.__dict__
+                obj_data = obj_in.dict() if hasattr(obj_in, "dict") else obj_in.__dict__
                 db_obj = self.model(**obj_data)
-            
+
             session.add(db_obj)
             await session.commit()
             await session.refresh(db_obj)
@@ -62,21 +62,27 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType], ABC
             session.expunge(db_obj)
             return db_obj
 
-    async def update(self, id: Union[int, UUID], obj_in: Union[UpdateSchemaType, Dict[str, Any]]) -> Optional[ModelType]:
+    async def update(
+        self, id: Union[int, UUID], obj_in: Union[UpdateSchemaType, Dict[str, Any]]
+    ) -> Optional[ModelType]:
         """Update an existing record."""
         async with self.db_manager.get_async_session() as session:
             db_obj = await session.get(self.model, id)
             if not db_obj:
                 return None
-            
+
             if isinstance(obj_in, dict):
                 update_data = obj_in
             else:
-                update_data = obj_in.dict(exclude_unset=True) if hasattr(obj_in, 'dict') else obj_in.__dict__
-            
+                update_data = (
+                    obj_in.dict(exclude_unset=True)
+                    if hasattr(obj_in, "dict")
+                    else obj_in.__dict__
+                )
+
             for field, value in update_data.items():
                 setattr(db_obj, field, value)
-            
+
             await session.commit()
             await session.refresh(db_obj)
             # Detach from session
@@ -89,13 +95,15 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType], ABC
             db_obj = await session.get(self.model, id)
             if not db_obj:
                 return False
-            
+
             await session.delete(db_obj)
             await session.commit()
             return True
 
     # Helper methods for detaching entities (included for your testing)
-    def _detach_entity(self, session, entity: Optional[ModelType]) -> Optional[ModelType]:
+    def _detach_entity(
+        self, session, entity: Optional[ModelType]
+    ) -> Optional[ModelType]:
         """Detach entity from session to prevent lazy loading issues."""
         if entity is not None:
             session.expunge(entity)
@@ -105,4 +113,4 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType], ABC
         """Detach list of entities from session."""
         for entity in entities:
             session.expunge(entity)
-        return entities 
+        return entities

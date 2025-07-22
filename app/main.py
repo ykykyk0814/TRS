@@ -1,13 +1,13 @@
 import logging
 import os
-
 from contextlib import asynccontextmanager
+
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.db.session import get_db_session_manager, init_db_session_manager
 from app.api import api_router
+from app.db.session import get_db_session_manager, init_db_session_manager
 
 # Load environment variables
 load_dotenv()

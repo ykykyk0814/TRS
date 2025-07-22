@@ -2,13 +2,13 @@ from typing import List, Optional
 from uuid import UUID
 
 from app.core.models import User
-from app.repository.user import UserRepository
 from app.core.schemas import UserCreate, UserUpdate
+from app.repository.user import UserRepository
 
 
 class UserService:
     """Service layer for user business logic."""
-    
+
     def __init__(self):
         self._repository = None
 
@@ -28,10 +28,7 @@ class UserService:
         return await self.repository.get_by_email(email)
 
     async def get_users(
-        self, 
-        skip: int = 0, 
-        limit: int = 100,
-        active_only: bool = False
+        self, skip: int = 0, limit: int = 100, active_only: bool = False
     ) -> List[User]:
         """Get users with optional filtering."""
         if active_only:
@@ -56,4 +53,4 @@ class UserService:
 
     async def get_user_count(self) -> int:
         """Get total user count."""
-        return await self.repository.count() 
+        return await self.repository.count()

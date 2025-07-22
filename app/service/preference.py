@@ -7,7 +7,7 @@ from app.repository.preference import PreferenceRepository
 
 class PreferenceService:
     """Service layer for preference business logic."""
-    
+
     def __init__(self):
         self._repository = None
 
@@ -30,7 +30,9 @@ class PreferenceService:
         """Create a new preference."""
         return await self.repository.create(preference_data)
 
-    async def update_preference(self, preference_id: int, preference_data: Dict) -> Optional[Preference]:
+    async def update_preference(
+        self, preference_id: int, preference_data: Dict
+    ) -> Optional[Preference]:
         """Update an existing preference."""
         return await self.repository.update(preference_id, preference_data)
 
@@ -39,9 +41,7 @@ class PreferenceService:
         return await self.repository.delete(preference_id)
 
     async def create_or_update_user_preference(
-        self, 
-        user_id: UUID, 
-        preference_data: Dict
+        self, user_id: UUID, preference_data: Dict
     ) -> Preference:
         """Create or update preference for a user."""
         existing = await self.get_user_preference(user_id)
@@ -49,4 +49,4 @@ class PreferenceService:
             return await self.update_preference(existing.id, preference_data)
         else:
             preference_data["user_id"] = user_id
-            return await self.create_preference(preference_data) 
+            return await self.create_preference(preference_data)

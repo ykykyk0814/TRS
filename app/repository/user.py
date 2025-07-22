@@ -1,16 +1,16 @@
 from typing import Optional
-from uuid import UUID
 
 from sqlalchemy import select
 
 from app.core.models import User
 from app.core.schemas import UserCreate, UserUpdate
+
 from .base import BaseRepository
 
 
 class UserRepository(BaseRepository[User, UserCreate, UserUpdate]):
     """Repository for User model operations."""
-    
+
     def __init__(self):
         super().__init__(User)
 
@@ -23,16 +23,10 @@ class UserRepository(BaseRepository[User, UserCreate, UserUpdate]):
 
     async def get_active_users(self, skip: int = 0, limit: int = 100):
         """Get all active users."""
-        return await self.get_multi(
-            skip=skip, 
-            limit=limit, 
-            filters={"is_active": True}
-        )
+        return await self.get_multi(skip=skip, limit=limit, filters={"is_active": True})
 
     async def get_verified_users(self, skip: int = 0, limit: int = 100):
         """Get all verified users."""
         return await self.get_multi(
-            skip=skip, 
-            limit=limit, 
-            filters={"is_verified": True}
-        ) 
+            skip=skip, limit=limit, filters={"is_verified": True}
+        )

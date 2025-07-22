@@ -1,5 +1,7 @@
 # Travel Recommendation System
 
+[![CI](https://github.com/ykykyk0814/TRS/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ykykyk0814/TRS/actions/workflows/ci.yml)
+
 This project aims to provide travellers personalized travel plans with FastAPI Users authentication system.
 
 ## Quickstart

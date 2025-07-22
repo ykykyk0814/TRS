@@ -1,16 +1,17 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import List
 from uuid import UUID
 
 from sqlalchemy import select
 
 from app.core.models import Ticket
+
 from .base import BaseRepository
 
 
 class TicketRepository(BaseRepository[Ticket, dict, dict]):
     """Repository for Ticket model operations."""
-    
+
     def __init__(self):
         super().__init__(Ticket)
 
@@ -29,15 +30,12 @@ class TicketRepository(BaseRepository[Ticket, dict, dict]):
             return result.scalars().all()
 
     async def get_by_date_range(
-        self, 
-        start_date: datetime, 
-        end_date: datetime
+        self, start_date: datetime, end_date: datetime
     ) -> List[Ticket]:
         """Get tickets within a date range."""
         async with self.db_manager.get_async_session() as session:
             query = select(Ticket).where(
-                Ticket.departure_time >= start_date,
-                Ticket.departure_time <= end_date
+                Ticket.departure_time >= start_date, Ticket.departure_time <= end_date
             )
             result = await session.execute(query)
-            return result.scalars().all() 
+            return result.scalars().all()

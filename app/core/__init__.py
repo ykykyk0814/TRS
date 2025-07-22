@@ -1,1 +1,1 @@
-# Core application components - models, schemas, auth 
+# Core application components - models, schemas, auth

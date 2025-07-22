@@ -16,5 +16,5 @@ async def api_info():
         "message": "Travel Recommendation System API",
         "version": "0.1.0",
         "docs": "/docs",
-        "health": "/health"
-    } 
+        "health": "/health",
+    }
