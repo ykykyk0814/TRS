@@ -1,0 +1,1 @@
+# Core application components - models, schemas, auth

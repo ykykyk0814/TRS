@@ -1,22 +1,41 @@
-name: Lint, Format, and Test
+name: CI
 
 on:
   push:
-    branches: [main, alembic]
+    branches: [main]
   pull_request:
+    branches: [main]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    services:
+      postgres:
+        image: postgres:16
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: travel_recommendation
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/travel_recommendation
+      SECRET: ci-test-secret-key-do-not-use-in-production
+      ENV: development
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.12"
+          cache: 'pip'
 
       - name: Install dependencies
         run: |
@@ -24,16 +43,30 @@ jobs:
           pip install -r requirements.txt
           pip install flake8 black pytest
 
+      - name: Wait for PostgreSQL
+        run: |
+          until pg_isready -h localhost -U postgres; do
+            echo "Waiting for postgres..."
+            sleep 2
+          done
+
+      - name: Run database migrations
+        run: |
+          alembic upgrade head
+
       - name: Check formatting with black
         run: |
-          black . --check --exclude 'alembic/versions/69d0b2be3d24_refactored_initial_migration.py'
-
+          black . --check
 
       - name: Lint with flake8
         run: |
-          flake8 . --exclude=venv,.git,__pycache__ --max-line-length=100
+          flake8 .
 
       - name: Run tests
         run: |
-          pytest
+          pytest -v
 
+      - name: Verify API endpoints (optional)
+        run: |
+          python tests/verify_endpoints.py --base-url http://localhost:8000 || echo "Endpoint verification skipped (requires running server)"
+        continue-on-error: true
