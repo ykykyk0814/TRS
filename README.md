@@ -11,7 +11,13 @@ This project aims to provide travellers personalized travel plans with FastAPI U
 # 1. Copy environment template
 cp env.template .env
 
-# 2. Start databases (PostgreSQL + Qdrant)
+# 2. Configure Amadeus API credentials (required for Airflow DAGs)
+# Edit .env file and add your Amadeus API credentials:
+# AMADEUS_CLIENT_ID=your_amadeus_client_id_here
+# AMADEUS_CLIENT_SECRET=your_amadeus_client_secret_here
+# Get credentials from: https://developers.amadeus.com/
+
+# 3. Start databases (PostgreSQL + Qdrant)
 ./docker-manage.sh up main
 
 # 3. Install dependencies and run migrations
@@ -27,7 +33,13 @@ uvicorn app.main:app --reload
 # 1. Copy environment template
 cp env.template .env
 
-# 2. Initialize Airflow (first time only)
+# 2. Configure Amadeus API credentials (required for Airflow DAGs)
+# Edit .env file and add your Amadeus API credentials:
+# AMADEUS_CLIENT_ID=your_amadeus_client_id_here
+# AMADEUS_CLIENT_SECRET=your_amadeus_client_secret_here
+# Get credentials from: https://developers.amadeus.com/
+
+# 3. Initialize Airflow (first time only)
 ./docker-manage.sh init
 
 # 3. Start all services (app + Airflow)
