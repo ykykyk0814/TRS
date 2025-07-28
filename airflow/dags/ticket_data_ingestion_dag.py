@@ -15,11 +15,75 @@ START_DATE = pendulum.now("UTC").subtract(days=1)
 CATCHUP = False
 
 
-def log_and_raise(msg, exc=None):
+# Custom exception classes
+class DataValidationError(Exception):
+    """Raised when data validation fails"""
+
+    pass
+
+
+class AmadeusAPIError(Exception):
+    """Raised when Amadeus API calls fail"""
+
+    pass
+
+
+class DatabaseError(Exception):
+    """Raised when database operations fail"""
+
+    pass
+
+
+def log_and_raise(msg, exc=None, error_type=Exception):
     logging.error(msg)
     if exc:
         logging.error(str(exc))
-    raise Exception(msg) if not exc else exc
+    raise error_type(msg) if not exc else exc
+
+
+def validate_flight_data(offer):
+    """Validate flight offer data quality"""
+    required_fields = ["id", "itineraries", "price"]
+    for field in required_fields:
+        if field not in offer:
+            raise DataValidationError(f"Missing required field: {field}")
+
+    # Validate itineraries
+    itineraries = offer.get("itineraries", [])
+    if not itineraries:
+        raise DataValidationError("No itineraries found in offer")
+
+    # Validate segments
+    for itinerary in itineraries:
+        segments = itinerary.get("segments", [])
+        if not segments:
+            raise DataValidationError("No segments found in itinerary")
+
+        for segment in segments:
+            # Validate airport codes
+            departure = segment.get("departure", {})
+            arrival = segment.get("arrival", {})
+
+            if not departure.get("iataCode") or not arrival.get("iataCode"):
+                raise DataValidationError("Invalid airport codes in segment")
+
+            # Validate timestamps
+            if not departure.get("at") or not arrival.get("at"):
+                raise DataValidationError("Missing departure/arrival times")
+
+    # Validate price
+    price = offer.get("price", {})
+    if not price.get("total"):
+        raise DataValidationError("Missing price information")
+
+    return True
+
+
+def send_alert(message, level="ERROR"):
+    """Send alert for failed runs (placeholder for actual implementation)"""
+    logging.error(f"[ALERT {level}] {message}")
+    # TODO: Implement actual alerting (email, Slack, etc.)
+    # Example: send_slack_notification(message) or send_email_alert(message)
 
 
 # Amadeus API config
@@ -64,10 +128,14 @@ def ticket_data_ingestion():
                 f"Token response: {token_resp.status_code} {token_resp.text[:200]}"
             )
             if token_resp.status_code != 200:
-                log_and_raise(f"Failed to get Amadeus token: {token_resp.text}")
+                error_msg = f"Failed to get Amadeus token: {token_resp.text}"
+                send_alert(error_msg, "CRITICAL")
+                log_and_raise(error_msg, error_type=AmadeusAPIError)
             access_token = token_resp.json().get("access_token")
             if not access_token:
-                log_and_raise("No access_token in Amadeus token response")
+                error_msg = "No access_token in Amadeus token response"
+                send_alert(error_msg, "CRITICAL")
+                log_and_raise(error_msg, error_type=AmadeusAPIError)
             # Call Amadeus Flight Offers Search API with sample params
             # Use a future date (3 months from now) to avoid "date in past" errors
             future_date = (datetime.now() + timedelta(days=90)).strftime("%Y-%m-%d")
@@ -88,12 +156,31 @@ def ticket_data_ingestion():
                 f"Flight Offers Search response: {resp.status_code} {resp.text[:500]}"
             )
             if resp.status_code != 200:
-                log_and_raise(f"Failed to fetch flight offers: {resp.text}")
+                error_msg = f"Failed to fetch flight offers: {resp.text}"
+                send_alert(error_msg, "ERROR")
+                log_and_raise(error_msg, error_type=AmadeusAPIError)
             data = resp.json().get("data", [])
             logging.info(f"Fetched {len(data)} flight offers from Amadeus.")
-            return data
+
+            # Validate each offer
+            validated_data = []
+            for offer in data:
+                try:
+                    validate_flight_data(offer)
+                    validated_data.append(offer)
+                except DataValidationError as e:
+                    logging.warning(
+                        f"Data validation failed for offer {offer.get('id', 'unknown')}: {e}"
+                    )
+                    send_alert(f"Data validation failed: {e}", "WARNING")
+                    continue
+
+            logging.info(f"Validated {len(validated_data)} out of {len(data)} offers.")
+            return validated_data
         except Exception as e:
-            log_and_raise("Exception in fetch_ticket_data", e)
+            error_msg = f"Exception in fetch_ticket_data: {str(e)}"
+            send_alert(error_msg, "ERROR")
+            log_and_raise(error_msg, e)
 
     @task()
     def transform_ticket_data(raw_data):
@@ -136,7 +223,9 @@ def ticket_data_ingestion():
             logging.info(f"Transformed {len(transformed)} offers.")
             return transformed
         except Exception as e:
-            log_and_raise("Exception in transform_ticket_data", e)
+            error_msg = f"Exception in transform_ticket_data: {str(e)}"
+            send_alert(error_msg, "ERROR")
+            log_and_raise(error_msg, e)
 
     @task()
     def load_to_postgres(transformed_data):
@@ -180,12 +269,18 @@ def ticket_data_ingestion():
                         conn.execute(sqlalchemy.text(insert_query), record)
                         logging.info(f"Inserted/updated record: {record}")
                     except Exception as e:
-                        logging.error(f"Error inserting record: {record}\n{e}")
+                        error_msg = f"Error inserting record: {record}\n{e}"
+                        logging.error(error_msg)
+                        send_alert(error_msg, "ERROR")
+                        raise DatabaseError(f"Database insertion failed: {e}")
+
             logging.info(
                 f"Successfully loaded {len(transformed_data)} records to Postgres."
             )
         except Exception as e:
-            log_and_raise("Exception in load_to_postgres", e)
+            error_msg = f"Exception in load_to_postgres: {str(e)}"
+            send_alert(error_msg, "ERROR")
+            log_and_raise(error_msg, e)
 
     # DAG flow
     raw = fetch_ticket_data()
