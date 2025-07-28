@@ -212,7 +212,10 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-
+# Airflow logs and temporary files
+airflow/logs/
+airflow/dag_processor/
+airflow/webserver_config.py
 
 .DS_Store
 .idea/
