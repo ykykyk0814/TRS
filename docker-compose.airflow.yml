@@ -22,6 +22,8 @@ x-airflow-common:
     AMADEUS_CLIENT_SECRET: ${AMADEUS_CLIENT_SECRET:-}
     AMADEUS_TOKEN_URL: ${AMADEUS_TOKEN_URL:-https://test.api.amadeus.com/v1/security/oauth2/token}
     AMADEUS_FLIGHT_OFFERS_URL: ${AMADEUS_FLIGHT_OFFERS_URL:-https://test.api.amadeus.com/v2/shopping/flight-offers}
+    # Database Configuration
+    MAIN_APP_DB_CONN: ${MAIN_APP_DB_CONN:-postgresql+psycopg2://postgres:postgres@travel-recommendation-db-1:5432/travel_recommendation}
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/airflow/dags:/opt/airflow/dags
     - ${AIRFLOW_PROJ_DIR:-.}/airflow/logs:/opt/airflow/logs

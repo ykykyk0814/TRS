@@ -58,8 +58,25 @@ class FlightTicketDatabaseHandler:
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
         """
+
+        # Add unique constraint if it doesn't exist
+        add_constraint_query = """
+        DO $$
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1 FROM pg_constraint
+                WHERE conname = 'flight_tickets_user_origin_dest_departure_key'
+            ) THEN
+                ALTER TABLE flight_tickets
+                ADD CONSTRAINT flight_tickets_user_origin_dest_departure_key
+                UNIQUE(user_id, origin, destination, departure_time);
+            END IF;
+        END $$;
+        """
+
         try:
             connection.execute(text(create_table_query))
+            connection.execute(text(add_constraint_query))
             logging.info("Flight tickets table created/verified successfully")
         except SQLAlchemyError as e:
             error_msg = f"Failed to create flight_tickets table: {e}"
