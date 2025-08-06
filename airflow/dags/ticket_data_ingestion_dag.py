@@ -1,12 +1,17 @@
 import logging
 import os
+import sys
 from datetime import datetime, timedelta
 
 import pendulum
 import requests
 from airflow.decorators import dag, task
+
+# Add the dags directory to Python path for imports
+sys.path.append(os.path.dirname(__file__))
+
 from data_transformer import FlightTicketTransformer
-from database_handler import FlightTicketDatabaseHandler
+from multi_database_handler import MultiDatabaseHandler
 
 # DAG config
 DAG_ID = "ticket_data_ingestion"
@@ -178,14 +183,21 @@ def ticket_data_ingestion():
                 logging.warning("No data to load to Postgres.")
                 return
 
-            # Initialize database handler
-            db_handler = FlightTicketDatabaseHandler()
+            # Initialize multi-database handler
+            db_handler = MultiDatabaseHandler()
 
-            # Bulk insert all records
-            successful_inserts = db_handler.bulk_insert_flight_tickets(transformed_data)
+            # Bulk insert all records into all databases
+            results = db_handler.bulk_insert_flight_tickets(transformed_data)
 
+            # Log results for each database
+            for db_name, count in results.items():
+                logging.info(
+                    f"Successfully loaded {count} records to {db_name} database."
+                )
+
+            total_inserted = sum(results.values())
             logging.info(
-                f"Successfully loaded {successful_inserts} records to Postgres."
+                f"Total records processed: {total_inserted} across {len(results)} databases."
             )
 
         except Exception as e:

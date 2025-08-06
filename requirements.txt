@@ -70,3 +70,7 @@ uvloop==0.21.0
 virtualenv==20.32.0
 watchfiles==1.1.0
 websockets==15.0.1
+# Vector Database and Embeddings
+qdrant-client==1.9.0
+sentence-transformers==3.0.1
+numpy==1.26.4
