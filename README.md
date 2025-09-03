@@ -119,6 +119,41 @@ python scripts/setup_qdrant.py
   ```
 - Note: This script is not picked up by pytest and is for manual/CI verification.
 
+## 📊 Monitoring
+
+The system includes comprehensive monitoring with Prometheus and Grafana for observability and alerting.
+
+### Quick Start
+```bash
+# 1. Setup monitoring infrastructure
+./scripts/manage_monitoring.sh setup
+
+# 2. Start monitoring services
+./scripts/manage_monitoring.sh start
+
+# 3. Access monitoring dashboards
+# Prometheus: http://localhost:9090
+# Grafana: http://localhost:3000 (admin/admin)
+```
+
+### Management Commands
+```bash
+./scripts/manage_monitoring.sh start      # Start monitoring
+./scripts/manage_monitoring.sh stop       # Stop monitoring
+./scripts/manage_monitoring.sh status     # Check status
+./scripts/manage_monitoring.sh health     # Health check
+./scripts/manage_monitoring.sh logs       # View logs
+```
+
+### What's Monitored
+- **System metrics**: CPU, memory, disk usage
+- **Container metrics**: Docker container performance
+- **Database metrics**: PostgreSQL and Redis performance
+- **Application metrics**: FastAPI, Airflow, Qdrant health
+- **Custom alerts**: Service availability, resource thresholds
+
+> 📚 **Detailed monitoring guide**: See [docs/MONITORING_SETUP.md](docs/MONITORING_SETUP.md)
+
 ## 🔧 Troubleshooting
 
 ### Airflow Permission Issues
