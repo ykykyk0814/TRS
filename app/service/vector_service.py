@@ -341,3 +341,9 @@ class VectorService:
         except Exception as e:
             logger.error(f"Qdrant health check failed: {e}")
             return False
+
+
+# Dependency function for FastAPI
+def get_vector_service() -> VectorService:
+    """Get VectorService instance for dependency injection"""
+    return VectorService()

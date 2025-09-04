@@ -1,0 +1,158 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Database Performance Dashboard",
+    "tags": ["database", "performance", "postgresql"],
+    "style": "dark",
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Database Query Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(db_queries_total[5m])",
+            "legendFormat": "{{operation}} {{table}} - {{status}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "min": 0,
+            "label": "Queries/sec"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Query Duration",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, rate(db_query_duration_seconds_bucket[5m]))",
+            "legendFormat": "50th percentile - {{operation}} {{table}}"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(db_query_duration_seconds_bucket[5m]))",
+            "legendFormat": "95th percentile - {{operation}} {{table}}"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(db_query_duration_seconds_bucket[5m]))",
+            "legendFormat": "99th percentile - {{operation}} {{table}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "min": 0,
+            "label": "Seconds"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Active Connections",
+        "type": "singlestat",
+        "targets": [
+          {
+            "expr": "db_connections_active",
+            "legendFormat": "Active Connections"
+          }
+        ],
+        "valueName": "current",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+      },
+      {
+        "id": 4,
+        "title": "Transaction Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(db_transactions_total[5m])",
+            "legendFormat": "{{status}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "min": 0,
+            "label": "Transactions/sec"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+      },
+      {
+        "id": 5,
+        "title": "Query Success Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(db_queries_total{status=\"success\"}[5m]) / rate(db_queries_total[5m]) * 100",
+            "legendFormat": "Success Rate %"
+          }
+        ],
+        "yAxes": [
+          {
+            "min": 0,
+            "max": 100,
+            "label": "Percentage"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16}
+      },
+      {
+        "id": 6,
+        "title": "Top Tables by Query Count",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "topk(10, sum by (table) (rate(db_queries_total[5m])))",
+            "legendFormat": "{{table}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16}
+      },
+      {
+        "id": 7,
+        "title": "Slow Queries",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(db_query_duration_seconds_bucket[5m])) > 1",
+            "legendFormat": "Slow Queries (>1s) - {{operation}} {{table}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "min": 0,
+            "label": "Seconds"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24}
+      },
+      {
+        "id": 8,
+        "title": "Database Operations by Type",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum by (operation) (rate(db_queries_total[5m]))",
+            "legendFormat": "{{operation}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "min": 0,
+            "label": "Queries/sec"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24}
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "30s"
+  }
+}

@@ -1,0 +1,183 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Business Metrics Dashboard",
+    "tags": ["business", "metrics", "travel"],
+    "style": "dark",
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "User Registrations",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(user_registrations_total[5m])",
+            "legendFormat": "Registrations/sec"
+          }
+        ],
+        "yAxes": [
+          {
+            "min": 0,
+            "label": "Registrations/sec"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "User Logins",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(user_logins_total[5m])",
+            "legendFormat": "{{login_method}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "min": 0,
+            "label": "Logins/sec"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Travel Searches",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(travel_searches_total[5m])",
+            "legendFormat": "{{search_type}} - {{destination}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "min": 0,
+            "label": "Searches/sec"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+      },
+      {
+        "id": 4,
+        "title": "Ticket Bookings",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(ticket_bookings_total[5m])",
+            "legendFormat": "{{origin}} to {{destination}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "min": 0,
+            "label": "Bookings/sec"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+      },
+      {
+        "id": 5,
+        "title": "Vector Searches",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(vector_searches_total[5m])",
+            "legendFormat": "{{collection_name}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "min": 0,
+            "label": "Searches/sec"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16}
+      },
+      {
+        "id": 6,
+        "title": "Vector Content Added",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(vector_content_added_total[5m])",
+            "legendFormat": "{{collection_name}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "min": 0,
+            "label": "Content/sec"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16}
+      },
+      {
+        "id": 7,
+        "title": "Search Duration",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, rate(search_duration_seconds_bucket[5m]))",
+            "legendFormat": "50th percentile - {{search_type}}"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(search_duration_seconds_bucket[5m]))",
+            "legendFormat": "95th percentile - {{search_type}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "min": 0,
+            "label": "Seconds"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24}
+      },
+      {
+        "id": 8,
+        "title": "Active Users",
+        "type": "singlestat",
+        "targets": [
+          {
+            "expr": "active_users",
+            "legendFormat": "Active Users"
+          }
+        ],
+        "valueName": "current",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24}
+      },
+      {
+        "id": 9,
+        "title": "Top Destinations",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "topk(10, sum by (destination) (rate(travel_searches_total[5m])))",
+            "legendFormat": "{{destination}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 32}
+      },
+      {
+        "id": 10,
+        "title": "Popular Routes",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "topk(10, sum by (origin, destination) (rate(ticket_bookings_total[5m])))",
+            "legendFormat": "{{origin}} to {{destination}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 32}
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "30s"
+  }
+}

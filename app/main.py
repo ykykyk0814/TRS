@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
@@ -8,6 +9,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import api_router
 from app.db.session import get_db_session_manager, init_db_session_manager
+from app.monitoring.metrics import get_metrics_response, system_metrics
+from app.monitoring.middleware import PrometheusMiddleware
 
 # Load environment variables
 load_dotenv()
@@ -23,6 +26,9 @@ ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*").split(",")
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:pass@localhost/mydb")
 ENV = os.getenv("ENV", "development")
 
+# Track application start time
+app_start_time = time.time()
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -31,6 +37,11 @@ async def lifespan(app: FastAPI):
         init_db_session_manager(DATABASE_URL, echo=True)
         logger.info("Database session initialized successfully!")
         logger.info("Use 'alembic upgrade head' to apply database migrations.")
+
+        # Initialize system metrics
+        system_metrics["app_uptime_seconds"].set(0)
+        logger.info("Prometheus metrics initialized successfully!")
+
         yield
     except Exception as e:
         logger.error(f"Failed to initialize database session: {e}")
@@ -52,6 +63,9 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Add Prometheus middleware (before CORS to ensure it tracks all requests)
+app.add_middleware(PrometheusMiddleware)
+
 # CORS
 app.add_middleware(
     CORSMiddleware,
@@ -63,3 +77,27 @@ app.add_middleware(
 
 # Include API router
 app.include_router(api_router, prefix="/api")
+
+
+# Add metrics endpoint
+@app.get("/metrics")
+async def metrics():
+    """Prometheus metrics endpoint"""
+    # Update uptime metric
+    uptime = time.time() - app_start_time
+    system_metrics["app_uptime_seconds"].set(uptime)
+
+    return get_metrics_response()
+
+
+# Add health check with metrics
+@app.get("/health")
+async def health_check():
+    """Health check endpoint with basic metrics"""
+    uptime = time.time() - app_start_time
+    return {
+        "status": "healthy",
+        "uptime_seconds": uptime,
+        "version": "0.1.0",
+        "environment": ENV,
+    }
