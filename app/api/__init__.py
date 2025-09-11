@@ -5,6 +5,7 @@ from . import (
     auth,
     auth_metrics,
     health,
+    hotels,
     preferences,
     tickets,
     tickets_with_metrics,
@@ -19,6 +20,7 @@ api_router = APIRouter()
 api_router.include_router(health.router, prefix="", tags=["health"])
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
 api_router.include_router(auth_metrics.router, prefix="/auth", tags=["auth-metrics"])
+api_router.include_router(hotels.router, prefix="/hotels", tags=["hotels"])
 api_router.include_router(tickets.router, prefix="/tickets", tags=["tickets"])
 api_router.include_router(
     tickets_with_metrics.router, prefix="/tickets-metrics", tags=["tickets-metrics"]
