@@ -1,0 +1,163 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Vector Database Dashboard",
+    "tags": ["vector", "database", "qdrant"],
+    "style": "dark",
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Vector Operations Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(vector_operations_total[5m])",
+            "legendFormat": "{{operation}} {{collection}} - {{status}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "min": 0,
+            "label": "Operations/sec"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Vector Operation Duration",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, rate(vector_operation_duration_seconds_bucket[5m]))",
+            "legendFormat": "50th percentile - {{operation}} {{collection}}"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(vector_operation_duration_seconds_bucket[5m]))",
+            "legendFormat": "95th percentile - {{operation}} {{collection}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "min": 0,
+            "label": "Seconds"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Collection Size",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "vector_collection_size",
+            "legendFormat": "{{collection_name}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "min": 0,
+            "label": "Vectors"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+      },
+      {
+        "id": 4,
+        "title": "Vector Search Duration",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, rate(vector_search_duration_seconds_bucket[5m]))",
+            "legendFormat": "50th percentile - {{collection_name}}"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(vector_search_duration_seconds_bucket[5m]))",
+            "legendFormat": "95th percentile - {{collection_name}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "min": 0,
+            "label": "Seconds"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+      },
+      {
+        "id": 5,
+        "title": "Vector Search Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(vector_searches_total[5m])",
+            "legendFormat": "{{collection_name}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "min": 0,
+            "label": "Searches/sec"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16}
+      },
+      {
+        "id": 6,
+        "title": "Vector Content Added Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(vector_content_added_total[5m])",
+            "legendFormat": "{{collection_name}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "min": 0,
+            "label": "Content/sec"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16}
+      },
+      {
+        "id": 7,
+        "title": "Operation Success Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(vector_operations_total{status=\"success\"}[5m]) / rate(vector_operations_total[5m]) * 100",
+            "legendFormat": "Success Rate %"
+          }
+        ],
+        "yAxes": [
+          {
+            "min": 0,
+            "max": 100,
+            "label": "Percentage"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24}
+      },
+      {
+        "id": 8,
+        "title": "Top Operations by Collection",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "topk(10, sum by (operation, collection) (rate(vector_operations_total[5m])))",
+            "legendFormat": "{{operation}} - {{collection}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24}
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "30s"
+  }
+}
